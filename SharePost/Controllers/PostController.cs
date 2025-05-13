@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SharePost.Data;
 using SharePost.Dtos;
 using SharePost.Models;
@@ -48,6 +49,7 @@ namespace SharePost.Controllers
             return Ok(new { post.Id, post.Description, post.ImagePath });
         }
 
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPost(int id)
         {
@@ -69,6 +71,22 @@ namespace SharePost.Controllers
             return Ok(response);
         }
 
+
+        [HttpGet]
+        //buradaki sayılar varsayılan pagination içindir
+        public async Task<ActionResult<IEnumerable<PostListDto>>> GetAllPost([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            return await _context.Posts
+               .Skip((page - 1) * pageSize)  // Verilen sayıda kaydı atlar
+               .Take(pageSize)               // Sonraki belirli sayıda kaydı alır
+               .Select(t => new PostListDto
+                {
+                    Id = t.Id,
+                    Description = t.Description,
+                    ImageUrl = t.ImagePath
+                })
+               .ToListAsync();
+        }
 
     }
 }
